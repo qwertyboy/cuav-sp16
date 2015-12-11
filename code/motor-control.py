@@ -16,6 +16,8 @@ m2dir	= 16
 outputPins = [m1step, m1dir, m2step, m2dir, 18]
 GPIO.setup(outputPins, GPIO.OUT)
 
+motor1		= 0
+motor2		= 1
 motorCount	= 2
 motorPins	= [[m1step, m1dir], [m2step, m2dir]]
 stepTime	= [0, 0]
@@ -33,17 +35,17 @@ def updateSpeed(motorNum, speed):
 	# set direction
 	if speed < 0:
 		# reverse
-		direction[motorNum - 1] = 0
+		direction[motorNum] = 0
 	else:
 		# forward
-		direction[motorNum - 1] = 1
+		direction[motorNum] = 1
 	
 	# get magnitude of speed and remap it to the step rate
 	speedMagnitude = abs(speed)
 	stepRate = remap(speedMagnitude, 0, 1, 0, maxStepRate)
 	
 	# set up compare values
-	stepTime[motorNum - 1] = float(1 / stepRate)
+	stepTime[motorNum] = float(1 / stepRate)
 # end updateSpeed
 
 
@@ -78,16 +80,16 @@ def remap(value, fromLow, fromHigh, toLow, toHigh):
 # end remap()
 
 totalSteps = [2000, 3000]
-updateSpeed(1, -0.750)
-updateSpeed(2, 0.250)
+updateSpeed(motor1, -0.750)
+updateSpeed(motor2, 0.250)
 loopRunning = 1
 
 while loopRunning:
 	updateMotors()
-	if (currentSteps[0] == 1000):
-		updateSpeed(1, -0.300)
-	if (currentSteps[1] == 1500):
-		updateSpeed(2, -0.750)
+	if (currentSteps[motor1] == 1000):
+		updateSpeed(motor1, -0.300)
+	if (currentSteps[motor2] == 1500):
+		updateSpeed(motor2, -0.750)
 
 	loopRunning = 0
 	for i in range(motorCount):
