@@ -50,8 +50,8 @@ def updateSpeed(motorNum, speed):
 # end updateSpeed
 
 
-# function for updating motors
-def updateMotors():
+# function for updating motors while keeping track of steps
+def updateMotorSteps():
 	newTime = time.time()
 	for i in range(motorCount):
 		# set direction pin
@@ -67,6 +67,35 @@ def updateMotors():
 # end updateMotors
 
 
+# function for updating only the speed of the motor
+def updateMotorSpeed():
+	# get current time
+	newTime = time.time()
+	for i in range(motorCount):
+		# set direction pin
+		GPIO.output(motorPins[i][1], direction[i])
+		
+		# check time
+		if (newTime - oldTime[i] > stepTime[i]):
+			oldTime[i] = newTime
+			GPIO.output(motorPins[i][0], 1)
+		elif (newTime - oldTime[i] > (stepTime[i] / 2)):
+			GPIO.output(motorPins[i][0], 0)
+# end updateMotorSpeed
+
+
+# function to set a motor to a specific angle
+def setAngle(motorNum, speed, angle):
+	totalSteps[motorNum] = angle / 1.8
+	updateSpeed(motorNum, speed)
+	
+	if (currentSteps[motorNum] < totalSteps[motorNum]):
+		updateMotorSteps()
+		return 0
+	return 1
+# end setAngle
+
+
 # simple function to re-map a range of values
 def remap(value, fromLow, fromHigh, toLow, toHigh):
 	# get how wide each range is
@@ -80,17 +109,11 @@ def remap(value, fromLow, fromHigh, toLow, toHigh):
 	return toLow + (valueNew * toRange)
 # end remap()
 
-totalSteps = [2000, 3000]
-updateSpeed(motor1, -0.750)
-updateSpeed(motor2, 0.250)
-loopRunning = 1
 
+loopRunning = 1
 while loopRunning:
-	updateMotors()
-	if (currentSteps[motor1] == 1000):
-		updateSpeed(motor1, -0.300)
-	if (currentSteps[motor2] == 1500):
-		updateSpeed(motor2, -0.750)
+	setAngle(motor1, -0.500, 180)
+	setAngle(motor2, -0.500, 270)
 
 	loopRunning = 0
 	for i in range(motorCount):
