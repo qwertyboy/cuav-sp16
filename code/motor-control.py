@@ -9,28 +9,36 @@ import time
 GPIO.setmode(GPIO.BOARD)
 
 # set up pins as outputs
+timingPin = 22
 m1step	= 10
 m1dir	= 8
 m2step	= 12
 m2dir	= 16
-outputPins = [m1step, m1dir, m2step, m2dir]
+outputPins = [m1step, m1dir, m2step, m2dir, timingPin]
 GPIO.setup(outputPins, GPIO.OUT)
 GPIO.output(outputPins, 0)
 
 # set up arrays for motor information
+# To add additional (or remove) motors, update motor count,
+# add a new motor definition, and add an element to each list
+motorCount	= 2
 motor1		= 0
 motor2		= 1
-motorCount	= 2
+#motor3		= 2
+
+# format for pins list:
+# [[Motor 1 Step, Motor 1 Direction], [Motor 2 Step, Motor 2 Direction], ... ]
 motorPins	= [[m1step, m1dir], [m2step, m2dir]]
+
+# add or remove an element from each of these for additional motors
 stepTime	= [0, 0]
-direction	= [0, 0]
 oldTime		= [0, 0]
-totalSteps	= [0, 0]
-currentSteps	= [0, 0]
+direction	= [0, 0]
+position	= [0, 0]
 
 
 # function for updating speed array
-def updateSpeed(motorNum, speed):
+def updateSpeedVals(motorNum, speed):
 	# set up some things
 	maxStepRate = 1000
 	
@@ -54,23 +62,6 @@ def updateSpeed(motorNum, speed):
 # end updateSpeed
 
 
-# function for updating motors while keeping track of steps
-def updateMotorSteps():
-	newTime = time.time()
-	for i in range(motorCount):
-		# set direction pin
-		GPIO.output(motorPins[i][1], direction[i])
-		
-		# check time and step count
-		if (newTime - oldTime[i] > stepTime[i]) and (currentSteps[i] < totalSteps[i]):
-			oldTime[i] = newTime
-			currentSteps[i] += 1
-			GPIO.output(motorPins[i][0], 1)
-		elif (newTime - oldTime[i] > (stepTime[i] / 2)):
-			GPIO.output(motorPins[i][0], 0)
-# end updateMotors
-
-
 # function for updating only the speed of the motor
 def updateMotorSpeed():
 	# get current time
@@ -82,19 +73,30 @@ def updateMotorSpeed():
 		# check time
 		if (newTime - oldTime[i] > stepTime[i]):
 			oldTime[i] = newTime
+			
+			# update position array
+			if ((direction[i] == 1) and (stepTime[i] != 0)):
+				position[i] += 1
+			elif ((direction[i] == 0) and (stepTime[i] != 0)):
+				position[i] -= 1
+			
 			GPIO.output(motorPins[i][0], 1)
 		elif (newTime - oldTime[i] > (stepTime[i] / 2)):
 			GPIO.output(motorPins[i][0], 0)
 # end updateMotorSpeed
 
 
-# function to set a motor to a specific angle
+# function to set absolute angle (assuming no steps are lost)
 def setAngle(motorNum, speed, angle):
-	totalSteps[motorNum] = angle / 1.8
-	updateSpeed(motorNum, speed)
+	updateSpeedVals(motorNum, speed)
 	
-	if (currentSteps[motorNum] < totalSteps[motorNum]):
-		updateMotorSteps()
+	if (speed < 0):
+		newPosition = int(angle / -1.8)
+	else:
+		newPosition = int(angle / 1.8)
+	
+	if (position[motorNum] != newPosition):
+		updateMotorSpeed()
 		return 0
 	return 1
 # end setAngle
@@ -102,7 +104,7 @@ def setAngle(motorNum, speed, angle):
 
 # function to set motor speed
 def setSpeed(motorNum, speed):
-	updateSpeed(motorNum, speed)
+	updateSpeedVals(motorNum, speed)
 	updateMotorSpeed()
 # end setSpeed
 
@@ -123,15 +125,23 @@ def remap(value, fromLow, fromHigh, toLow, toHigh):
 
 loopRunning = 1
 while loopRunning:
-	setAngle(motor1, -0.500, 180)
-	setAngle(motor2, -0.500, 270)
-	
 	loopRunning = 0
+	
+	if (position[motor1] > -1000):
+		setSpeed(motor1, -0.1)
+	else:
+		setSpeed(motor1, 0)
+	
+	if (position[motor2] < 2345):
+		setSpeed(motor2, 0.75)
+	else:
+		setSpeed(motor2, 0)
+	
 	for i in range(motorCount):
-		if (currentSteps[i] != totalSteps[i]):
+		if (stepTime[i] != 0):
 			loopRunning = 1
 			break
-
+	
 
 # clean up gpio pins
 GPIO.cleanup()
