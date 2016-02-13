@@ -16,6 +16,7 @@ m2dir	= 16
 outputPins = [m1step, m1dir, m2step, m2dir, 18]
 GPIO.setup(outputPins, GPIO.OUT)
 
+# set up arrays for motor information
 motor1		= 0
 motor2		= 1
 motorCount	= 2
