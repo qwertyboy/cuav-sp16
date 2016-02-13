@@ -13,8 +13,9 @@ m1step	= 10
 m1dir	= 8
 m2step	= 12
 m2dir	= 16
-outputPins = [m1step, m1dir, m2step, m2dir, 18]
+outputPins = [m1step, m1dir, m2step, m2dir]
 GPIO.setup(outputPins, GPIO.OUT)
+GPIO.output(outputPins, 0)
 
 # set up arrays for motor information
 motor1		= 0
@@ -46,7 +47,10 @@ def updateSpeed(motorNum, speed):
 	stepRate = remap(speedMagnitude, 0, 1, 0, maxStepRate)
 	
 	# set up compare values
-	stepTime[motorNum] = float(1 / stepRate)
+	if (stepRate == 0):
+		stepTime[motorNum] = 0
+	else:
+		stepTime[motorNum] = float(1 / stepRate)
 # end updateSpeed
 
 
@@ -96,6 +100,13 @@ def setAngle(motorNum, speed, angle):
 # end setAngle
 
 
+# function to set motor speed
+def setSpeed(motorNum, speed):
+	updateSpeed(motorNum, speed)
+	updateMotorSpeed()
+# end setSpeed
+
+
 # simple function to re-map a range of values
 def remap(value, fromLow, fromHigh, toLow, toHigh):
 	# get how wide each range is
@@ -114,13 +125,13 @@ loopRunning = 1
 while loopRunning:
 	setAngle(motor1, -0.500, 180)
 	setAngle(motor2, -0.500, 270)
-
+	
 	loopRunning = 0
 	for i in range(motorCount):
 		if (currentSteps[i] != totalSteps[i]):
 			loopRunning = 1
 			break
-		
+
 
 # clean up gpio pins
 GPIO.cleanup()
