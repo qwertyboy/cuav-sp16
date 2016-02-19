@@ -7,8 +7,8 @@ import time
 import pygame
 
 # use GPIO header pin numbers
+GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
-GPIO.cleanup()
 
 # set up pins as outputs
 m1step	= 8
@@ -161,12 +161,13 @@ while not loopRunning:
 		if event.type == pygame.JOYBUTTONDOWN:
 			if joystick.get_button(0):
 				disabled = not disabled
-				print("Motor state toggled.\nState: %d" % (1 - disabled))
-	
-	if disabled:
-		disableMotors()
-	else:
-		enableMotors()
+				
+				if disabled:
+					disableMotors()
+					print("Motors disabled!")
+				else:
+					enableMotors()
+					print("Motors enabled!")
 	
 	m1Speed = remap(axis0, -1.0, 1.0, -0.75, 0.75)
 	m2Speed = remap(axis1, -1.0, 1.0, -0.75, 0.75)
