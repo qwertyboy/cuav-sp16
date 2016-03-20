@@ -23,10 +23,13 @@ void setDirection(uint8_t, uint16_t);
 void setSleep(uint8_t, uint8_t, uint16_t);
 
 int main(){
-	// set pwm output pins
+	// set output pins
 	pinMode(PWMA, OUTPUT);
+	pinMode(DIRA, OUTPUT);
+	pinMode(SLPA, OUTPUT);
 	pinMode(PWMB, OUTPUT);
-	pinMode(12, OUTPUT);
+	pinMode(DIRB, OUTPUT);
+	pinMode(SLPB, OUTPUT);
 	
 	// change pwm frequency, PWMA and PWMB are on the same timer
 	analogWriteFrequency(PWMA, 20000);
@@ -65,10 +68,10 @@ void rxEvent(int numBytes){
 		setPWM(PWMB, val);
 		break;
 	case DIRACMD:
-		setDirection(PWMA, val);
+		setDirection(DIRA, val);
 		break;
 	case DIRBCMD:
-		setDirection(PWMB, val);
+		setDirection(DIRB, val);
 		break;
 	case SLPCMD:
 		setSleep(SLPA, SLPB, val);
@@ -79,26 +82,25 @@ void rxEvent(int numBytes){
 }
 
 // function to set the pwm output
-void setPWM(uint8_t channel, uint16_t val){
+void setPWM(uint8_t pwmPin, uint16_t val){
 	// bound the value
 	if(val > 1023){val = 1023;}
 	else if(val < 0){val = 0;}
 	// set output
-	analogWrite(channel, val);
+	analogWrite(pwmPin, val);
 }
 
 // function to set the direction of the motor
-void setDirection(uint8_t channel, uint16_t state){
+void setDirection(uint8_t dirPin, uint16_t state){
 	if(state == 0 || state == 1){
-		// 0 is forward, 1 is reverse
-		digitalWrite(channel, !state);
+		digitalWrite(dirPin, !state);
 	}
 }
 
 // function to power down or enable the motor drivers
-void setSleep(uint8_t slpA, uint8_t slpB, uint16_t state){
+void setSleep(uint8_t splAPin, uint8_t slpBPin, uint16_t state){
 	if(state == 0 || state == 1){
-		digitalWrite(slpA, state);
-		digitalWrite(slpB, state);
+		digitalWrite(slpAPin, state);
+		digitalWrite(slpBPin, state);
 	}
 }
