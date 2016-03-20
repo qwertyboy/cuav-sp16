@@ -129,12 +129,6 @@ def enableMotors():
 # end enableMotors
 
 
-# function to send the motors to the home position
-def sendHome(speed):
-	print("haha this doesnt actually do anything")
-# end sendHome
-
-
 # simple function to re-map a range of values
 def remap(value, fromLow, fromHigh, toLow, toHigh):
 	# get how wide each range is
