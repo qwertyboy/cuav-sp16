@@ -31,18 +31,31 @@ void setSleep(uint8_t, uint8_t, uint16_t);
 
 // adc object
 ADC * adc = new ADC();
+elapsedMicros time;
 
 int main(){
 	// setup functions
 	pwmSetup();
 	adcSetup();
+	ADC::Sync_result result;
 	
 	// begin I2C, slave address 0x01
 	// register event on receive
 	Wire.begin(0x10);
 	Wire.onReceive(rxEvent);
 	
+	Serial.begin(9600);
+	
 	while(1){
+		result = adc->readSynchronizedContinuous();
+		result.result_adc0 = (uint16_t)result.result_adc0;
+		result.result_adc1 = (uint16_t)result.result_adc1;
+		
+		Serial.print(time, DEC);
+		Serial.print(" ");
+		Serial.print(result.result_adc0 * (3.3 / adc->getMaxValue(ADC_0)), DEC);
+		Serial.print(" ");
+		Serial.println(result.result_adc1 * (3.3 / adc->getMaxValue(ADC_1)), DEC);
 	}
 }
 
@@ -84,6 +97,9 @@ void adcSetup(){
 	adc->setResolution(12, ADC_1);
 	adc->setConversionSpeed(ADC_HIGH_SPEED, ADC_1);
 	adc->setSamplingSpeed(ADC_HIGH_SPEED, ADC_1);
+	
+	// start reading
+	adc->startSynchronizedContinuous(ADCPIN1, ADCPIN2);
 }
 
 // function that gets called when i2c data is received
