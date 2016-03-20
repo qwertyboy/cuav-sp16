@@ -11,20 +11,27 @@
 #define SLPB 8
 
 // adc pin defs
+#define ADC1 0
+#define ADC2 1
 #define ADCPIN1 A1
 #define ADCPIN2 A2
 
 // i2c cmd defs
+#define I2CADDR 0x10
 #define PWMACMD 0x01
 #define DIRACMD 0x02
 #define PWMBCMD 0x06
 #define DIRBCMD 0x07
 #define SLPCMD  0x0C
 
+#define ADC1CMD 0x0D
+#define ADC2CMD 0x0E
+
 // function prototypes
 void pwmSetup(void);
 void adcSetup(void);
 void rxEvent(int);
+void txEvent(void);
 void setPWM(uint8_t, uint16_t);
 void setDirection(uint8_t, uint16_t);
 void setSleep(uint8_t, uint8_t, uint16_t);
@@ -32,6 +39,12 @@ void setSleep(uint8_t, uint8_t, uint16_t);
 // adc object
 ADC * adc = new ADC();
 elapsedMicros time;
+
+// variable defs
+uint16_t pwmAval, pwmBval = 0;
+uint8_t dirAflag, dirBflag = 0;
+uint8_t sleepFlag = 0;
+uint16_t adc1val, adc2val = 0;
 
 int main(){
 	// setup functions
@@ -41,21 +54,24 @@ int main(){
 	
 	// begin I2C, slave address 0x01
 	// register event on receive
-	Wire.begin(0x10);
+	Wire.begin(I2CADDR);
 	Wire.onReceive(rxEvent);
+	Wire.onRequest(txEvent);
 	
 	Serial.begin(9600);
 	
 	while(1){
+		// read the adc
 		result = adc->readSynchronizedContinuous();
-		result.result_adc0 = (uint16_t)result.result_adc0;
-		result.result_adc1 = (uint16_t)result.result_adc1;
+		adc1val = (uint16_t)result.result_adc0;
+		adc2val = (uint16_t)result.result_adc1;
 		
-		Serial.print(time, DEC);
-		Serial.print(" ");
-		Serial.print(result.result_adc0 * (3.3 / adc->getMaxValue(ADC_0)), DEC);
-		Serial.print(" ");
-		Serial.println(result.result_adc1 * (3.3 / adc->getMaxValue(ADC_1)), DEC);
+		// update outputs
+		setSleep(SLPA, SLPB, sleepFlag);
+		setDirection(DIRA, dirAflag);
+		setDirection(DIRB, dirBflag);
+		setPWM(PWMA, pwmAval);
+		setPWM(PWMB, pwmBval);
 	}
 }
 
@@ -115,19 +131,35 @@ void rxEvent(int numBytes){
 	
 	switch(cmd){
 	case PWMACMD:
-		setPWM(PWMA, val);
+		pwmAval = val;
 		break;
 	case PWMBCMD:
-		setPWM(PWMB, val);
+		pwmBval = val;
 		break;
 	case DIRACMD:
-		setDirection(DIRA, val);
+		dirAflag = !val;
 		break;
 	case DIRBCMD:
-		setDirection(DIRB, val);
+		dirBflag = !val;
 		break;
 	case SLPCMD:
-		setSleep(SLPA, SLPB, val);
+		sleepFlag = val;
+		break;
+	default:
+		break;
+	}
+}
+
+// function that gets called when a request is recieved
+void txEvent(){
+	char cmd = Wire.read();
+	
+	switch(cmd){
+	case ADC1CMD:
+		Wire.write(adc1val);
+		Serial.println(adc1val * (3.3 / adc->getMaxValue()));
+		break;
+	case ADC2CMD:
 		break;
 	default:
 		break;
@@ -146,7 +178,7 @@ void setPWM(uint8_t pwmPin, uint16_t val){
 // function to set the direction of the motor
 void setDirection(uint8_t dirPin, uint16_t state){
 	if(state == 0 || state == 1){
-		digitalWrite(dirPin, !state);
+		digitalWrite(dirPin, state);
 	}
 }
 

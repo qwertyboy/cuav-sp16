@@ -5,13 +5,15 @@ import smbus
 import pygame
 import funcs as f
 
-# define some constants
-TEENSYADDR = 0x10
-PWMACMD = 0x01
-DIRACMD = 0x02
-PWMBCMD = 0x06
-DIRBCMD = 0x07
-SLPCMD = 0x0C
+# define i2c commands
+TEENSYADDR	= 0x10
+PWMACMD		= 0x01
+DIRACMD		= 0x02
+PWMBCMD		= 0x06
+DIRBCMD		= 0x07
+SLPCMD		= 0x0C
+ADC1CMD		= 0x0D
+ADC2CMD		= 0x0E
 
 # init i2c and pygame
 bus = smbus.SMBus(1)
@@ -46,6 +48,12 @@ while 1:
 	# update pwm on the teensy
 	bus.write_word_data(TEENSYADDR, PWMACMD, pwm1)
 	bus.write_word_data(TEENSYADDR, PWMBCMD, pwm2)
+	
+	# get the adc readings from the teensy
+	#adc1Val = bus.read_word_data
+	#adc2val = bus.read_word_data(TEENSYADDR, ADC2CMD);
+	
+	#print(adc1val);
 	
 	time.sleep(0.01)
 
