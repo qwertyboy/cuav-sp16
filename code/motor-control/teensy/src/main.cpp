@@ -24,14 +24,10 @@
 #define DIRBCMD 0x07
 #define SLPCMD  0x0C
 
-#define ADC1CMD 0x0D
-#define ADC2CMD 0x0E
-
 // function prototypes
 void pwmSetup(void);
 void adcSetup(void);
 void rxEvent(int);
-void txEvent(void);
 void setPWM(uint8_t, uint16_t);
 void setDirection(uint8_t, uint16_t);
 void setSleep(uint8_t, uint8_t, uint16_t);
@@ -41,10 +37,10 @@ ADC * adc = new ADC();
 elapsedMicros time;
 
 // variable defs
-uint16_t pwmAval, pwmBval = 0;
-uint8_t dirAflag, dirBflag = 0;
-uint8_t sleepFlag = 0;
-uint16_t adc1val, adc2val = 0;
+volatile uint16_t pwmAval, pwmBval = 0;
+volatile uint8_t dirAflag, dirBflag = 0;
+volatile uint8_t sleepFlag = 0;
+uint16_t adc1Val, adc2Val = 0;
 
 int main(){
 	// setup functions
@@ -56,15 +52,14 @@ int main(){
 	// register event on receive
 	Wire.begin(I2CADDR);
 	Wire.onReceive(rxEvent);
-	Wire.onRequest(txEvent);
 	
-	Serial.begin(9600);
+	//Serial.begin(9600);
 	
 	while(1){
 		// read the adc
 		result = adc->readSynchronizedContinuous();
-		adc1val = (uint16_t)result.result_adc0;
-		adc2val = (uint16_t)result.result_adc1;
+		adc1Val = (uint16_t)result.result_adc0;
+		adc2Val = (uint16_t)result.result_adc1;
 		
 		// update outputs
 		setSleep(SLPA, SLPB, sleepFlag);
@@ -144,22 +139,6 @@ void rxEvent(int numBytes){
 		break;
 	case SLPCMD:
 		sleepFlag = val;
-		break;
-	default:
-		break;
-	}
-}
-
-// function that gets called when a request is recieved
-void txEvent(){
-	char cmd = Wire.read();
-	
-	switch(cmd){
-	case ADC1CMD:
-		Wire.write(adc1val);
-		Serial.println(adc1val * (3.3 / adc->getMaxValue()));
-		break;
-	case ADC2CMD:
 		break;
 	default:
 		break;
