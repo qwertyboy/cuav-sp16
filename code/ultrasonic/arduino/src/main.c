@@ -1,14 +1,31 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <stdio.h>
 #include "defs.h"
 #include "funcs.h"
+#include "uart.h"
+
+// some variable defs
+uint32_t lastTime = 0;
+uint16_t count = 0;
+char printBuf[32] = "";
 
 int main(){
     pinInit();
     interruptInit();
+    uartInit(9600);
+
     DDRB |= (1<<PB5);
 
     while(1){
+        uint32_t currTime = micros();
+        if(currTime - lastTime > 1000000){
+            lastTime = currTime;
+
+            sprintf(printBuf, "%d", count++);
+            uartPrint("fucking words! ");
+            uartPrintln(printBuf);
+        }
     }
 }
 
