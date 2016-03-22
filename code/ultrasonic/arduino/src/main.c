@@ -1,27 +1,20 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "defs.h"
+#include "funcs.h"
 
-int main(void){
+int main(){
+    pinInit();
+    interruptInit();
+    DDRB |= (1<<PB5);
 
+    while(1){
+    }
 }
 
-// isr for sens1
-ISR(PCINT0_vect){
-
-}
-
-// isr for sens2
-ISR(PCINT1_vect){
-
-}
-
-// isr for sens3
+// ISR for reading inputs
+volatile uint8_t bits = 0;
 ISR(PCINT2_vect){
-
-}
-
-// isr for sens4
-ISR(INT0_vect){
-
+    // mask off the bits we care about for sensing
+    bits = PIND & (SENS1 | SENS2 | SENS3 | SENS4);
 }
