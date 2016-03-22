@@ -13,9 +13,10 @@ char printBuf[32] = "";
 int main(){
     pinInit();
     interruptInit();
-    uartInit(9600);
+    uartInit(115200);
 
     DDRB |= (1<<PB5);
+    DDRC |= (1<<PC0 | 1<<PC1 | 1<<PC2 | 1<<PC3);
 
     while(1){
         uint32_t currTime = micros();
@@ -26,6 +27,8 @@ int main(){
             uartPrint("fucking words! ");
             uartPrintln(printBuf);
         }
+
+
     }
 }
 

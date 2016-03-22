@@ -9,11 +9,19 @@
 #include "defs.h"
 
 // uart initialization
-void uartInit(uint32_t baud){
-    // calculate baud register setting
-    uint16_t baudrate = (F_CPU / (16 * baud)) - 1;
-    UBRR0H = baudrate >> 8;
-    UBRR0L = baudrate;
+void uartInit(uint32_t baudrate){
+    // calculate baudrate register setting
+    uint16_t baudreg = (F_CPU / (8 * baudrate)) - 1;
+    UCSR0A |= (1<<U2X0);
+
+    // if baudrate is greater than 4095, recalculate and clear 2x speed bit
+    // this only happens if baudrate is very low
+    if(baudreg > 0xFFF){
+        baudreg = (F_CPU / (16 * baudrate)) - 1;
+        UCSR0A &= ~(1<<U2X0);
+    }
+    UBRR0H = baudreg >> 8;
+    UBRR0L = baudreg;
 
     // enable receiver and transmitter interrupts, enable receiver and transmitter
     UCSR0B |= (1<<RXEN0 | 1<<TXEN0);
