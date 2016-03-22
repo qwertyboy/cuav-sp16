@@ -43,7 +43,7 @@ char uartGetChar(void){
 }
 
 // function to send a string
-void uartPrint(char * data){
+void uartPrint(const char * data){
     uint16_t i = 0;
     while(data[i] != '\0'){
         uartSendChar(data[i]);
@@ -52,7 +52,7 @@ void uartPrint(char * data){
 }
 
 // function to send a string with a newline after
-void uartPrintln(char * data){
+void uartPrintln(const char * data){
     uartPrint(data);
     uartPrint("\r\n");
 }

@@ -17,8 +17,8 @@ ISR(TIMER0_OVF_vect){
 // I/O pin initializations
 void pinInit(void){
     // input pins, pullups
-    DDRD &= ~(SENS1 | SENS2 | SENS3 | SENS4);
-    PORTD |= (SENS1 | SENS2 | SENS3 | SENS4);
+    DDRD &= ~(1<<PT1 | 1<<PT2 | 1<<PT3 | 1<<PT4);
+    PORTD |= (1<<PT1 | 1<<PT2 | 1<<PT3 | 1<<PT4);
 }
 
 // interrupt initializations

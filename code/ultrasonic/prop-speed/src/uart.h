@@ -10,7 +10,7 @@
 void uartInit(uint32_t);
 void uartSendChar(char);
 char uartGetChar(void);
-void uartPrint(char * data);
-void uartPrintln(char * data);
+void uartPrint(const char * data);
+void uartPrintln(const char * data);
 
 #endif
