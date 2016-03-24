@@ -3,7 +3,7 @@
 
 // function prototypes
 void pinInit(void);
-void interruptInit(void);
+void peripInit(void);
 uint32_t micros(void);
 
 #endif

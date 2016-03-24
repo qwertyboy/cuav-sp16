@@ -47,20 +47,20 @@ int main(){
 	pwmSetup();
 	adcSetup();
 	ADC::Sync_result result;
-	
+
 	// begin I2C, slave address 0x01
 	// register event on receive
 	Wire.begin(I2CADDR);
 	Wire.onReceive(rxEvent);
-	
+
 	//Serial.begin(9600);
-	
+
 	while(1){
 		// read the adc
 		result = adc->readSynchronizedContinuous();
 		adc1Val = (uint16_t)result.result_adc0;
 		adc2Val = (uint16_t)result.result_adc1;
-		
+
 		// update outputs
 		setSleep(SLPA, SLPB, sleepFlag);
 		setDirection(DIRA, dirAflag);
@@ -96,19 +96,19 @@ void adcSetup(){
 	// pins as input
 	pinMode(ADCPIN1, INPUT);
 	pinMode(ADCPIN2, INPUT);
-	
+
 	// ADC0 setup
 	adc->setAveraging(1);
 	adc->setResolution(12);
 	adc->setConversionSpeed(ADC_HIGH_SPEED);
 	adc->setSamplingSpeed(ADC_HIGH_SPEED);
-	
+
 	// ADC1 setup
 	adc->setAveraging(1, ADC_1);
 	adc->setResolution(12, ADC_1);
 	adc->setConversionSpeed(ADC_HIGH_SPEED, ADC_1);
 	adc->setSamplingSpeed(ADC_HIGH_SPEED, ADC_1);
-	
+
 	// start reading
 	adc->startSynchronizedContinuous(ADCPIN1, ADCPIN2);
 }
@@ -118,12 +118,13 @@ void rxEvent(int numBytes){
 	// first byte is the command
 	char cmd = Wire.read();
 	uint16_t val = 0;
-	
+
 	// next two bytes are the value
 	char lowByte = Wire.read();
 	char highByte = Wire.read();
 	val = (highByte << 8) | lowByte;
-	
+
+    /////////////////////////////////////// this is a well commented line
 	switch(cmd){
 	case PWMACMD:
 		pwmAval = val;

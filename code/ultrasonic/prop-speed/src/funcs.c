@@ -22,20 +22,26 @@ void pinInit(void){
 }
 
 // interrupt initializations
-void interruptInit(void){
-    cli();
+void peripInit(void){
     // pin change mask register, enable interrupts on corresponding pins
     PCMSK2 |= (1<<PCINT18 | 1<<PCINT19 | 1<<PCINT20 | 1<<PCINT21);
     // pin change interrupt control register, enable PCIE2
     PCICR |= (1<<PCIE2);
 
     // timer/counter0 control register A, fast pwm
-	TCCR0A |= 0x03;
+    TCCR0A |= 0x03;
 	// clkio / 64
 	TCCR0B |= 0x03;
 	// enable overflow interrupt
 	TIMSK0 |= 0x01;
 
+    /* this is to enable 31.25kHz pwm on timer/counter 1
+    // timer/counter1 control register A
+    // 8 bit phase correct, set COM1A1
+    TCCR1A |= 0x81;
+    // clkio / 1 - no prescaling (32kHz?)
+    TCCR1B |= 0x01;
+    */
     sei();
 }
 
@@ -49,6 +55,7 @@ uint32_t micros(){
 	m = timer0_overflow_count;
 	t = TCNT0;
 
+    // This comment is self explanatory.
 	if((TIFR0 & 1) && (t < 255)){
 		m++;
 	}
