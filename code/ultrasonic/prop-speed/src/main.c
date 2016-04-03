@@ -13,26 +13,49 @@
 // some variable defs
 volatile uint32_t pt1Temp, pt2Temp, pt3Temp, pt4Temp = 0;
 volatile uint32_t pt1Time, pt2Time, pt3Time, pt4Time = 0;
+volatile uint8_t risePt1, risePt2, risePt3, risePt4 = 0;
+float rpm1, rpm2, rpm3, rpm4 = 0.0;
 uint32_t lastTime = 0;
 uint16_t count = 0;
 char printBuf[32] = "";
 
 int main(){
+    DDRB |= (1<<PB5);
     pinInit();
     peripInit();
     uartInit(115200);
 
-    DDRB |= (1<<PB5);
-    DDRC |= (1<<PC0 | 1<<PC1 | 1<<PC2 | 1<<PC3);
-
     while(1){
         uint32_t currTime = micros();
+
+        rpm1 = 1 / ((float)pt1Time / 1000000);
+        rpm2 = 60 / pt2Time;
+        rpm3 = 60 / pt3Time;
+        rpm4 = 60 / pt4Time;
+
         if(currTime - lastTime > 1000000){
             lastTime = currTime;
 
-            sprintf(printBuf, "%d", (int)pt1Time);
-            uartPrint("pt1 time: ");
+            sprintf(printBuf, "%d", count++);
+            uartPrint("\nReading number: ");
             uartPrintln(printBuf);
+
+            sprintf(printBuf, "%d", pt1Time);
+            uartPrint("RPM1: ");
+            uartPrintln(printBuf);
+            /*
+            sprintf(printBuf, "%d", rpm2);
+            uartPrint("RPM2: ");
+            uartPrintln(printBuf);
+
+            sprintf(printBuf, "%d", rpm3);
+            uartPrint("RPM3: ");
+            uartPrintln(printBuf);
+
+            sprintf(printBuf, "%d", rpm4);
+            uartPrint("RPM4: ");
+            uartPrintln(printBuf);
+            */
         }
     }
 }
@@ -45,8 +68,10 @@ ISR(PCINT2_vect){
     // check pt1
     if(PIND & (1<<PT1)){
         pt1Temp = micros();
-    }else{
+        risePt1 ^= 1;
+    }else if(risePt1 == 0){
         pt1Time = micros() - pt1Temp;
+        PORTB ^= (1<<PB5);
     }
 
     // check pt2

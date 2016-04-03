@@ -18,7 +18,7 @@ ISR(TIMER0_OVF_vect){
 void pinInit(void){
     // input pins, pullups
     DDRD &= ~(1<<PT1 | 1<<PT2 | 1<<PT3 | 1<<PT4);
-    PORTD |= (1<<PT1 | 1<<PT2 | 1<<PT3 | 1<<PT4);
+    //PORTD |= (1<<PT1 | 1<<PT2 | 1<<PT3 | 1<<PT4);
 }
 
 // interrupt initializations
@@ -35,13 +35,15 @@ void peripInit(void){
 	// enable overflow interrupt
 	TIMSK0 |= 0x01;
 
-    /* this is to enable 31.25kHz pwm on timer/counter 1
+    /*
+    // this is to enable 31.25kHz pwm on timer/counter 1
     // timer/counter1 control register A
     // 8 bit phase correct, set COM1A1
     TCCR1A |= 0x81;
     // clkio / 1 - no prescaling (32kHz?)
-    TCCR1B |= 0x01;
+    TCCR1B |= 0x02;
     */
+
     sei();
 }
 
